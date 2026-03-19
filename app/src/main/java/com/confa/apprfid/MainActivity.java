@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.confa.rscja.UHFReadTagFragment.*;
+import com.rscja.deviceapi.RFIDWithUHFUART;
 import com.rscja.deviceapi.entity.InventoryParameter;
 import com.rscja.deviceapi.entity.UHFTAGInfo;
 import com.rscja.deviceapi.interfaces.IUHFInventoryCallback;
@@ -71,15 +71,21 @@ public class MainActivity extends AppCompatActivity {
         tvUnique = findViewById(R.id.tvUnique);
         tvEpcList = findViewById(R.id.tvEpcList);
 
-        mReader = RFIDWithUHFUART.getInstance();
-        if (mReader == null) {
-            Toast.makeText(this, "Error: no se pudo obtener el lector RFID.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-        }
-        if (!mReader.init(this)) {
-            Toast.makeText(this, "Error al inicializar el lector RFID.", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "RFID init failed");
+        try {
+            // Intentamos obtener la instancia del lector
+            mReader = RFIDWithUHFUART.getInstance();
+
+            if (mReader != null) {
+                if (!mReader.init(this)) {
+                    Toast.makeText(this, "Error al inicializar el hardware RFID.", Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "RFID init failed");
+                }
+            }
+        } catch (Exception e) {
+            // Este bloque captura la 'ConfigurationException' que muestra tu imagen
+            Log.e(TAG, "Error de configuración: " + e.getMessage());
+            Toast.makeText(this, "Error de configuración del lector: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
 
         btnStart.setOnClickListener(v -> startInventory());
